@@ -219,16 +219,26 @@ Keenable、Firecrawl、Parallel、DeepSeek 官方搜索。
 它**直接从库的源码仓库取最新文档和可运行代码示例**，注入模型上下文 —— 专门治
 「模型拿过时训练数据编 API」。对我们这种"经常要写某个库的代码"的场景，价值很直接。
 
-DSH 的 MCP 是**按条目显式开启**的：在 profile 的 `cordis.patch.yml` 里加一条
+DSH 的 MCP 是**按条目显式开启**的：在 profile 的 `cordis.patch.yml` 里插入一条
 `@deepseek-ai/dsh-mcp-client`。
 
+> ⚠️ **必须包在 `- insert:` 里**（2026-10-17 实测踩过）：
+> 那个文件的**顶层条目**是「按 id 覆盖**已有**条目」的语义，
+> 新增条目写在顶层会被当成「覆盖一个不存在的 id」→ **`entry not found` → 静默忽略**
+> （不报错、不生效，是最难查的一类失败）。
+> 这条机制写在那个文件自己的开头注释里，`deep-read-summarize/cordis.patch.yml` 也有同样说明。
+
 ```yaml
-- id: mcp-context7
-  name: '@deepseek-ai/dsh-mcp-client'
-  config:
-    serverName: context7
-    transport: streamable-http
-    url: https://mcp.context7.com/mcp
+- insert:
+    - id: mcp-context7
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: context7
+        transport: streamable-http
+        url: https://mcp.context7.com/mcp
+        failOnStartupError: true          # ← 连不上就出声，别静默少几个工具
+        headers:
+          Authorization: !!js '`Bearer ${process.env.CONTEXT7_API_KEY}`'
 ```
 
 **重启 DSH 后**，工具会以 `mcp__context7__resolve-library-id` 与
@@ -237,9 +247,10 @@ DSH 的 MCP 是**按条目显式开启**的：在 profile 的 `cordis.patch.yml`
 
 | | |
 |---|---|
-| **keyless** | ✅ 可用（2026-10-16 实测：`initialize` HTTP 200，服务器 **Context7 v4.4.2**，协议 `2025-06-18`，2 个工具） |
-| **想要更高频率上限** | 去 <https://context7.com/dashboard> 领免费 key，写进 `~/.dsh/.env` 的 `CONTEXT7_API_KEY`，再把下面两行注释去掉 |
-| **鉴权头** | `headers: { Authorization: !!js "\`Bearer ${process.env.CONTEXT7_API_KEY}\`" }` |
+| **keyless** | ✅ 可用（2026-10-16 实测 `initialize` 200、服务器 **Context7 v4.4.2**、协议 `2025-06-18`；2026-10-17 在 DSH 里接通并**成功取回带源码链接的文档**） |
+| **想要更高频率上限** | 去 <https://context7.com/dashboard> 领免费 key（`ctx7sk-…`） |
+| **key 怎么交给它** | ⚠️ **`~/.dsh/.env` 不会进宿主进程环境**（2026-10-17 实测为空）→ 要用**真正的环境变量**：`setx CONTEXT7_API_KEY <你的key>`，然后**重启 DSH** |
+| **工具参数（实测，别猜）** | `resolve-library-id` 要 **`query` + `libraryName` 两个都填**；`query-docs` 要 **`libraryId` + `query`**（`language` 可选） |
 
 > ⚠️ **MCP 条目是启动时装载的** —— 改完 `cordis.patch.yml` 必须重启 DSH 才生效。
 
