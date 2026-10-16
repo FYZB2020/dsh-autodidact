@@ -35,19 +35,14 @@ DSH 本来就有 `web_search` / `web_fetch`。真正的短板是**行为**：
 ├── LICENSE
 ├── install/
 │   ├── install.ps1               ← 一键安装（自动探测 dsh 与 profile，无硬编码路径）
-│   ├── check-env.mjs             ← 环境与网络自检
-│   ├── self-test.mjs             ← 发布前自检（语法/frontmatter/死链/gitignore/密钥）
-│   ├── scan-secrets.mjs          ← 发布前闸门（查密钥与绝对路径）
-│   └── push-to-github.mjs        ← 用 REST API 推送（绕开不可达的 github.com）
+│   └── check-env.mjs             ← 环境与网络自检
 ├── skills/research-autonomy/
 │   └── SKILL.md                  ← ★ 核心：自学行为协议
 ├── tools/
 │   └── bili_lecture.mjs          ← B站「字幕 + 热门评论」一次取，长视频自动分块
 └── docs/
-    ├── PUBLISH.md                 建仓库与推送指南 ← 要发布就看这份
     ├── capability-coverage.md       能搜哪些地方（逐项标注 实测/未测/被墙）
     ├── verification-checklist.md    装完怎么验收
-    ├── acceptance-report-2026-10-16.md  一次完整验收的实测结果
     ├── design-and-pitfalls.md       完整技术方案（含所有踩坑记录）
     ├── performance.md               时间花在哪、怎么提速
     ├── known-defects.md             已知缺陷（诚实清单）

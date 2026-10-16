@@ -158,5 +158,9 @@ whenToUse: ...     # 触发场景，写得越具体越容易被想起
 - 想让它**更爱触发**：把平时会说的说法补进 `whenToUse`
 - 想让它**少管闲事**：把不该管的场景写进第 1 节的"不触发"清单
 
-改完可以跑一遍 `install/self-test.mjs` —— 它会校验 frontmatter 里的 `name` 和 `description`
-是否还在、以及所有相对链接是否可达。
+改完自己确认两件事：
+
+1. frontmatter 里的 `name`（必须 kebab-case）和 `description` 还在 ——
+   **这两个键写坏会让整个技能被静默丢弃**（官方有意的 fail-closed 设计），
+   而表现只是"技能不见了"，很难查。
+2. 新加的相对链接都指向真实文件。
