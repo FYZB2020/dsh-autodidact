@@ -1035,8 +1035,8 @@ DSH「任一 Loader 条目失败则整棵树失败」→ **整个应用起不来
 | 博查 Bocha | ¥0.036/次（第三方转述） | **官方价目页在飞书登录墙后面，未验证** |
 | 秘塔 Metaso | ¥0.03/次（第三方转述） | **官方价目页不可读，未验证** |
 | Firecrawl | 免费档 1000 credits/月 ≈ 500 次搜索；Hobby $16/月（年付）≈ $0.0064/次 | 官方，高。**keyless 从国内电信出口实测 200** |
-| Tavily | 免费 1000 credits/月，`X-Tavily-Access-Mode: keyless` 是真的官方 keyless 档 | 官方，高 |
-| Exa | 免费 $10 credits/月（≈2500 次 instant） | 官方，高 |
+| Tavily ★ | **免费 1000 credits/月**（每月 1 日重置，不要信用卡）；`X-Tavily-Access-Mode: keyless` 是真的官方 keyless 档；PAYGO $0.008/credit；另有**学生免费档** | 官方价目页，高（2026-10-16 复核） |
+| Exa ★ | **免费每月 $10 credits + 一次性 $10 开户奖励**（不要付款方式）；Search **$4/1k 请求**（≤10 条结果）；另有 Startup/Education 资助最高 $1000 | 官方价目页，高（2026-10-16 复核） |
 | Serper | **2500 次免费、免信用卡**；无官方 MCP | 官方页，高 |
 | Brave | **2026-02 起取消了固定免费额度**，改为 $5/1000 + 每月 $5 credit（≈1000 次），**需绑卡** | 厂商文档站，中 |
 | Perplexity Search API | **$1.00/1000（fast）** —— 全场最便宜的单次美元价；**无免费额度**；需代理 | 官方价目文件，高 |

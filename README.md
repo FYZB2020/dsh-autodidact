@@ -177,9 +177,33 @@ ZHIHU_API_KEY=<同一个值>
 > **如实说明**：实测中**即使知识库已存在，上传仍会报 `Code=40006 file parsing failed`**
 > （检索是通的，写不进去）。**不要指望它一定可用**；本地知识库（见 §3）才可靠。
 
-#### 2.3 其他搜索 API（可选）
+#### 2.3 搜索 API：**优先 Exa 与 Tavily**
 
-**不配任何 key 就已经有 8 个引擎可用**：Bing（中文）、AnySearch、Exa、Tavily、
+**★ 建议把这两个放最优先。** 它们都是「给 AI agent 用的搜索 API」：返回的是
+**能直接喂模型的干净文本**（不是原始 HTML）—— 省的不只是搜索本身，**更是上下文 token**。
+
+| | 注册 | 免费额度（2026-10-16 官方页核实） | 单价 |
+|---|---|---|---|
+| **Exa** | <https://dashboard.exa.ai/onboarding-guest> | **每月 $10 credits** + 一次性 $10 开户奖励，**不要付款方式** | Search **$4/1k 请求**（≤10 条结果） |
+| **Tavily** | <https://app.tavily.com/home> | **每月 1000 API credits**（每月 1 日重置），**不要信用卡** | PAYGO **$0.008/credit**；另有学生免费档 |
+
+两个 key 写进 `~/.dsh/.env`，或在 **设置 → 插件 → 插件配置 → 网页搜索** 面板里填
+（面板存 `~/.dsh/.credentials.yaml`，优先级最高）：
+
+```
+EXA_API_KEY=<Exa 的 key>
+TAVILY_API_KEY=<Tavily 的 key>
+```
+
+**不配也能用**：Exa 有 keyless 回退、Tavily 有官方 keyless 档
+（`X-Tavily-Access-Mode: keyless`）。**填了只是额度内更稳、更快。**
+
+> **引擎顺序**在 **设置 → 插件 → 插件配置 → 网页搜索 → 回退顺序** 里调。面板原话：
+> *"Top to bottom is the fallback order. The preferred engine is still tried first."*
+> `dsh-free-search` 的默认回退链**已经是 `exa → tavily → …` 打头**；
+> 而「首选引擎」是**每次调用时**指定的（调用 `advanced_search` 时带 `engine` 参数）。
+
+**不配任何 key 也已经有 8 个引擎可用**：Bing（中文）、AnySearch、**Exa**、**Tavily**、
 Keenable、Firecrawl、Parallel、DeepSeek 官方搜索。
 
 想更宽再考虑：**智谱 `search_std` ¥0.01/次**（最便宜的靠谱付费选项）、

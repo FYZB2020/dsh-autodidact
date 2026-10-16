@@ -82,7 +82,10 @@ Write 2–5 concrete **keyword** queries per gap. Query craft that actually work
 ### Step 2 — Search, and use more than one engine/platform
 
 Use every search surface available (native `web_search`, the installed search plugin,
-MCP search servers). Then search where the material actually lives:
+MCP search servers). **Prefer the agent-oriented search APIs (`exa`, `tavily`) when the
+plugin offers them** — they return model-ready clean text instead of raw HTML, which
+saves context tokens as well as round trips. Fall back to scraped engines (Bing) for
+Chinese-language material. Then search where the material actually lives:
 
 | Need | Where to search |
 |---|---|

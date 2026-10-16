@@ -24,8 +24,8 @@
 |---|---|---|
 | **Bing（`zh-CN`，当前默认）** | ✅ | 免 key，国内直连 |
 | **AnySearch** | ✅ | 免 key |
-| **Exa** | ✅ | 免 key 档可用 |
-| **Tavily** | ✅ | 官方 keyless 档（`X-Tavily-Access-Mode: keyless`） |
+| **Exa** ★ | ✅ | **优先用**。免 key 有回退；配 key 后每月 $10 credits（≈2500 次 instant），<https://dashboard.exa.ai/onboarding-guest> |
+| **Tavily** ★ | ✅ | **优先用**。官方 keyless 档（`X-Tavily-Access-Mode: keyless`）；配 key 后每月 1000 credits，<https://app.tavily.com/home> |
 | **Keenable** | ✅ | 免 key，同 IP 共享 1000 请求/小时 |
 | **Firecrawl** | ✅ | keyless `/v2` 可用，1000 credits/月 ≈ 500 次搜索 |
 | **Parallel** | ✅ | 免 key |
