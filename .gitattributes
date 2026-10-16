@@ -1,0 +1,19 @@
+# 统一行尾：仓库里一律 LF，工作区也一律 LF。
+#
+# 为什么需要这一行：本机 `core.autocrlf=true` 会让 git 在 checkout 时把文本写成
+# CRLF，而 `install/push-to-github.mjs`（走 REST API 推送的那条路）读的是**工作区
+# 字节** —— 两者不一致时，会把整份文件的行尾都推成 CRLF，产生"几百行增删"的假 diff。
+# 显式声明 `eol=lf` 之后，git 存 LF、签出也 LF，两条推送路径产出的内容就一致了。
+* text=auto eol=lf
+
+# 二进制：防止被当文本做转换
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.pdf  binary
+*.zip  binary
+*.wav  binary
+*.mp3  binary
+*.onnx binary
