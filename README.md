@@ -52,7 +52,8 @@ DSH 本来就有 `web_search` / `web_fetch`。真正的短板是**行为**：
     ├── performance.md               时间花在哪、怎么提速
     ├── known-defects.md             已知缺陷（诚实清单）
     ├── bilibili-notes.md            B站字幕/评论的实测结论（含"死路"）
-    └── keyless-apis-china.md        中国大陆可用的免 key 数据源
+    ├── keyless-apis-china.md        中国大陆可用的免 key 数据源
+    └── triggering-the-skill.md      **怎么触发技能、怎么确认它真跑了** ← 要用它就看这份
 ```
 
 ---
@@ -202,6 +203,10 @@ mkdir -p .dsh/skills && cp -r skills/research-autonomy .dsh/skills/
 # 或对所有工作区生效
 cp -r skills/research-autonomy ~/.dsh/skills/
 ```
+
+> 想让它**触发**、想知道它**到底跑没跑**（而不是敷衍你），看
+> **[docs/triggering-the-skill.md](docs/triggering-the-skill.md)** —— 三种说法、
+> 三处可见痕迹、以及它不听话时怎么拿它自己的规矩压它。
 
 知识库目录（技能会自动往里写）：
 
