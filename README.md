@@ -48,7 +48,8 @@ DSH 本来就有 `web_search` / `web_fetch`。真正的短板是**行为**：
     ├── known-defects.md             已知缺陷（诚实清单）
     ├── bilibili-notes.md            B站字幕/评论的实测结论（含"死路"）
     ├── keyless-apis-china.md        中国大陆可用的免 key 数据源
-    └── triggering-the-skill.md      **怎么触发技能、怎么确认它真跑了** ← 要用它就看这份
+    ├── triggering-the-skill.md      **怎么触发技能、怎么确认它真跑了** ← 要用它就看这份
+    └── dsh-patch-and-mcp.md         **改 profile patch / 接 MCP 必看**：insert 语义、环境变量、静默失败
 ```
 
 ---
@@ -253,6 +254,9 @@ DSH 的 MCP 是**按条目显式开启**的：在 profile 的 `cordis.patch.yml`
 | **工具参数（实测，别猜）** | `resolve-library-id` 要 **`query` + `libraryName` 两个都填**；`query-docs` 要 **`libraryId` + `query`**（`language` 可选） |
 
 > ⚠️ **MCP 条目是启动时装载的** —— 改完 `cordis.patch.yml` 必须重启 DSH 才生效。
+
+> 完整的踩坑记录（**为什么顶层写法会被静默忽略**、`.env` 为什么不行、怎么排查）
+> 见 **[docs/dsh-patch-and-mcp.md](docs/dsh-patch-and-mcp.md)**。
 
 ### 3）启用技能 + 建知识库
 
