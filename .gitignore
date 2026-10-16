@@ -1,0 +1,30 @@
+# ---- 密钥：绝对不要提交 ----
+.env
+.env.*
+!.env.example
+_secrets/
+*.secret
+*.key
+credentials*.yaml
+
+# ---- 运行时产物 ----
+bili-output/
+deepread-output/
+_backups/
+_knowledge/raw/
+*.log
+
+# ---- 大文件（音视频/模型/转储） ----
+*.m4s
+*.mp4
+*.wav
+*.mp3
+*_raw.json
+node_modules/
+
+# ---- 编辑器/系统 ----
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store
