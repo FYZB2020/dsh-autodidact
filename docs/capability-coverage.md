@@ -67,6 +67,7 @@
 
 | 目标 | 工具 | 实测 |
 |---|---|---|
+| **库/框架 API 文档** | **Context7 MCP**（`mcp__context7__resolve-library-id` / `mcp__context7__query-docs`） | ✅ 实测 `initialize` 200、2 个工具；提示词里加 `use context7` 触发。keyless 可用，key 提高频率上限 |
 | GitHub 仓库 / issue / release | `domain_search` → `github_releases`；`platform_search` → `github` | ✅ release 实测通过（拿到 v5.10.7 的完整更新说明） |
 | npm / PyPI / crates / Maven / NuGet / Docker Hub… | `domain_search` → `pypi` / `crates` / `registries` | ❓ 未逐个测（npm registry 本机 ✅） |
 | Hugging Face 模型 | `domain_search` → `huggingface` | ❓ 未测（hf-mirror.com 本机 ✅） |

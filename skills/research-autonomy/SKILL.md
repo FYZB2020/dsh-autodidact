@@ -89,7 +89,7 @@ Chinese-language material. Then search where the material actually lives:
 
 | Need | Where to search |
 |---|---|
-| API / library / tool用法 | official docs, the project repo, CHANGELOG |
+| API / library / tool用法 | **Context7（MCP，先查这个）**、official docs、the project repo、CHANGELOG |
 | 报错原因 | the exact error string, the repo's issues, Stack Overflow |
 | 真实使用经验 / 踩坑 | 知乎（用官方 API 工具）、技术博客、公众号 |
 | 论文 / 规范 | arXiv, Semantic Scholar, 官方标准文档 |

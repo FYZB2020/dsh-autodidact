@@ -213,6 +213,36 @@ Keenable、Firecrawl、Parallel、DeepSeek 官方搜索。
 > ⚠️ **Bing Search API 已于 2025-08-11 退役**，别再找 `api.bing.microsoft.com`。
 > （`dsh-free-search` 里的"免 key Bing"是抓搜索网页，不是那个 API。）
 
+#### 2.4 MCP 数据源：Context7（查库/框架的**最新**文档）
+
+[Context7](https://context7.com) 是 Upstash 的 MCP 服务器（ThoughtWorks 技术雷达评为 **Trial**）：
+它**直接从库的源码仓库取最新文档和可运行代码示例**，注入模型上下文 —— 专门治
+「模型拿过时训练数据编 API」。对我们这种"经常要写某个库的代码"的场景，价值很直接。
+
+DSH 的 MCP 是**按条目显式开启**的：在 profile 的 `cordis.patch.yml` 里加一条
+`@deepseek-ai/dsh-mcp-client`。
+
+```yaml
+- id: mcp-context7
+  name: '@deepseek-ai/dsh-mcp-client'
+  config:
+    serverName: context7
+    transport: streamable-http
+    url: https://mcp.context7.com/mcp
+```
+
+**重启 DSH 后**，工具会以 `mcp__context7__resolve-library-id` 与
+`mcp__context7__query-docs` 出现；在提示词里加一句 **`use context7`** 就会去查
+（先解析出库 ID，再取该库的文档）。
+
+| | |
+|---|---|
+| **keyless** | ✅ 可用（2026-10-16 实测：`initialize` HTTP 200，服务器 **Context7 v4.4.2**，协议 `2025-06-18`，2 个工具） |
+| **想要更高频率上限** | 去 <https://context7.com/dashboard> 领免费 key，写进 `~/.dsh/.env` 的 `CONTEXT7_API_KEY`，再把下面两行注释去掉 |
+| **鉴权头** | `headers: { Authorization: !!js "\`Bearer ${process.env.CONTEXT7_API_KEY}\`" }` |
+
+> ⚠️ **MCP 条目是启动时装载的** —— 改完 `cordis.patch.yml` 必须重启 DSH 才生效。
+
 ### 3）启用技能 + 建知识库
 
 ```bash
