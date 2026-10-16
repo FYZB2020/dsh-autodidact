@@ -53,6 +53,8 @@ function Find-Dsh {
     # 2) 从"正在运行的 DSH 进程"反推安装根。
     #    进程命令行里同时含 "...\resources\runtime\..." 与 "...\resources\app.asar\..."，
     #    取这两者之前的那个盘符路径就是安装根。
+    #    ⚠️ 路径里可以有空格（"DeepSeek Harness"），所以字符类只排除引号、不排除空白——
+    #    早先排除了 \s，于是带空格的默认安装路径**永远反推不出来**。
     #    ⚠️ 不要递归扫整盘（C:\、D:\）—— 实测有过一次 214 秒的教训。
     try {
         $procs = Get-CimInstance Win32_Process -Filter "Name like '%DeepSeek%'" -ErrorAction SilentlyContinue
@@ -60,7 +62,7 @@ function Find-Dsh {
         foreach ($pr in $procs) {
             $cl = $pr.CommandLine
             if (-not $cl) { continue }
-            foreach ($m in [regex]::Matches($cl, '([A-Za-z]:\\[^"''\s]*?)\\resources\\(?:runtime|app\.asar)')) {
+            foreach ($m in [regex]::Matches($cl, '([A-Za-z]:\\[^"'']*?)\\resources\\(?:runtime|app\.asar)')) {
                 [void]$roots.Add($m.Groups[1].Value)
             }
         }
@@ -78,12 +80,45 @@ function Find-Dsh {
     foreach ($base in @($env:LOCALAPPDATA, $env:ProgramFiles, ${env:ProgramFiles(x86)})) {
         if (-not $base) { continue }
         $cands += (Join-Path $base 'Programs\@deepseek-ai\dsh-desktop\resources\runtime\cli\bin\dsh.cmd')
+        # 桌面版默认就装在这里 —— 早先的候选列表里漏了这一条
+        $cands += (Join-Path $base 'Programs\DeepSeek Harness\resources\runtime\cli\bin\dsh.cmd')
         $cands += (Join-Path $base 'DeepSeek Harness\resources\runtime\cli\bin\dsh.cmd')
         $cands += (Join-Path $base '@deepseek-ai\dsh-desktop\resources\runtime\cli\bin\dsh.cmd')
     }
     foreach ($c in $cands) { if ($c -and (Test-Path $c)) { return (Resolve-Path $c).Path } }
 
     throw '找不到 dsh。请用 -DshCmd <路径> 指定（例如 <DSH_INSTALL>\resources\runtime\cli\bin\dsh.cmd），或把 dsh 加进 PATH。'
+}
+
+# ---------------------------------------------------------------- 定位 node
+function Find-Node {
+    param([string] $DshPath)
+    # 1) PATH
+    $onPath = Get-Command node -ErrorAction SilentlyContinue
+    if ($onPath) { return $onPath.Source }
+
+    # 2) DSH 自带的 node。
+    #    桌面版自带的运行时里就有 node，很多机器**并没有全局装 Node**——
+    #    所以"node 不在 PATH"不等于"跑不了"，先来这里找。
+    #    dsh.cmd 的布局是 <root>\resources\runtime\cli\bin\dsh.cmd，从它反推 <root>。
+    if ($DshPath) {
+        try {
+            $root2 = ''
+            if ($DshPath -match '^(.*?)\\resources\\runtime\\cli\\bin\\dsh\.cmd$') { $root2 = $Matches[1] }
+            elseif ($DshPath -match '^(.*?)\\resources\\') { $root2 = $Matches[1] }
+            if ($root2) {
+                foreach ($rel in @(
+                    'resources\runtime\primary-runtime\dependencies\node\bin\node.exe',
+                    'resources\runtime\primary-runtime\node\bin\node.exe',
+                    'resources\runtime\node\bin\node.exe'
+                )) {
+                    $cand = Join-Path $root2 $rel
+                    if (Test-Path $cand) { return (Resolve-Path $cand).Path }
+                }
+            }
+        } catch { }
+    }
+    return ''
 }
 
 # ---------------------------------------------------------------- profile 探测
@@ -140,12 +175,19 @@ if (-not $Profile) {
 $profDir = Join-Path $env:USERPROFILE ('.dsh\profiles\' + $Profile)
 if (-not (Test-Path $profDir)) { Say ('profile 目录不存在：' + $profDir) 'Red'; exit 1 }
 
+$node = Find-Node -DshPath $dsh
+if (-not $node) {
+    Say '找不到 node：PATH 里没有，DSH 自带运行时里也没找到。' 'Red'
+    Say '  装一个 Node.js >= 22，或用 -DshCmd 把 dsh 指对（脚本会顺着它去找自带的 node）。' 'Red'
+    exit 1
+}
+Say ('node CLI  : ' + $node)
 $nodeOk = $false
-try { & node --version | Out-Null; $nodeOk = ($LASTEXITCODE -eq 0) } catch { $nodeOk = $false }
-if (-not $nodeOk) { Say 'node 不可用 —— 请先安装 Node.js >= 22' 'Red'; exit 1 }
+try { & $node --version | Out-Null; $nodeOk = ($LASTEXITCODE -eq 0) } catch { $nodeOk = $false }
+if (-not $nodeOk) { Say ('node 跑不起来：' + $node) 'Red'; exit 1 }
 
 $probe = Join-Path $KitRoot 'install\check-env.mjs'
-$rawProbe = & node $probe 2>&1; $probeCode = $LASTEXITCODE
+$rawProbe = & $node $probe 2>&1; $probeCode = $LASTEXITCODE
 Say ('网络检查  : ' + (@($rawProbe) | Select-Object -First 1) + $(if ($probeCode -eq 0) { ' ✅' } else { ' ❌' }))
 if ($probeCode -ne 0) { Say 'npm registry 不可达 —— 先解决网络' 'Red'; exit 1 }
 

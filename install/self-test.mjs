@@ -69,9 +69,16 @@ for (const f of files.filter(x => x.endsWith('.md'))) {
 if (!warns.some(w => w.startsWith('死链'))) oks.push('所有相对链接可达');
 
 // ---- 4. .gitignore 是否真挡得住 ----
+//
+// ⚠️ `git check-ignore` 在"不是 git 仓库"的目录里返回的是 128 + "fatal: not a git
+// repository"，不是"没被忽略"。早先的写法把这两种情况混为一谈，于是**刚解压、还没
+// git init 的时候必然报两条假失败**，而它本意是给一条"跳过实测"的警告。
+// 所以先确认自己在工作树里，不在就跳过，别报假警。
 const gi = path.join(root, '.gitignore');
 if (!fs.existsSync(gi)) fails.push('.gitignore 不存在');
-else {
+else if (!isInsideWorkTree()) {
+  warns.push('.gitignore 实测跳过：当前目录不在 git 工作树里（解压后先 git init，或提交前在仓库里再跑一次）');
+} else {
   const cleaned = mjs.length; // 占位，避免未使用告警
   void cleaned;
   // 造两个临时文件，用 git check-ignore 验证
@@ -100,6 +107,19 @@ else {
   } finally {
     if (!hadEnv && fs.existsSync(probeEnv)) fs.unlinkSync(probeEnv);
     if (!hadSec && fs.existsSync(probeSec)) fs.rmSync(probeSec, { recursive: true, force: true });
+  }
+}
+
+/**
+ * 当前目录是否位于一个 git 工作树中。
+ * @returns {boolean} 是则为 true。
+ */
+function isInsideWorkTree() {
+  try {
+    execFileSync('git', ['-C', root, 'rev-parse', '--is-inside-work-tree'], { stdio: 'ignore' });
+    return true;
+  } catch {
+    return false;
   }
 }
 
