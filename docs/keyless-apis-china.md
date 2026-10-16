@@ -38,7 +38,8 @@ wrap them, and which need a key or GitHub access?
 - **Node's bundled TLS works for both.** Script API calls with Node (or Python), not `curl.exe`.
 - `npm view` fails with `EPERM` because npm's cache is outside the workspace. Use
   `https://registry.npmjs.org/<pkg>` over HTTPS instead (and `registry.npmmirror.com` is ~4x faster).
-- The workspace `_tmp\` folder got swept mid-session; use a fresh filename or a subdirectory per run.
+- Don't keep scratch files in a shared temp folder that another session may clean up mid-run;
+  use a fresh filename (or a subdirectory) per run.
 
 ### Reachability (no proxy, measured 2026-10-16)
 - **Blocked (TCP timeout):** all `*.wikipedia.org`, `api.wikimedia.org`, all `*.wikidata.org`,

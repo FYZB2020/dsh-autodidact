@@ -18,12 +18,12 @@
 | 微信公众号正文抓取 | ✅ 可用（3.4MB 页面、正文容器在、24 图） | 本机实调 |
 | PubMed E-utilities | ✅ 可用（命中 6182 篇，取回真实标题） | 本机实调 |
 | OpenAlex / Crossref / DOAJ | ✅ 可用 | 本机实调 |
-| **本地转录资产** | ✅ **本机已有，不必下载**：SenseVoice int8 ONNX（239MB）在 `~\.dsh\speech-to-text\sensevoice\models\sensevoice-onnx\`；ffmpeg 在 OhMyPPT 目录下（**不在 PATH**） | 本机实测 |
+| **本地转录资产** | ✅ **本机已有，不必下载**：SenseVoice int8 ONNX（239MB）在 `~\.dsh\speech-to-text\sensevoice\models\sensevoice-onnx\`；ffmpeg 通常已随某个桌面应用装好，但**不在 PATH**（找到绝对路径直接调，或自己用 winget 装一份） | 本机实测 |
 | **B站字幕（无登录）** | ✅ **能拿到** —— 用 `/x/v2/dm/view?aid=&oid=&type=1`（**不是** `player/v2`）。独立复核：3 条视频 2 条成功，取回 100 cue | 本机独立复核 |
 
 > ⚠️ **本清单早先版本把「B站字幕」记成 ❌ 拿不到，那是错的**，已修正。
 > 错因：只用文档化的 `view`/`player/v2` 判断，没查**播放器前端实际调用**的 `dm/view`。
-> 细节见 `_knowledge\lessons\bilibili-subtitles.md`。
+> 细节见 [`docs/bilibili-notes.md`](bilibili-notes.md)。
 
 **⇒ 上面这些不要重复测。**
 
@@ -71,9 +71,9 @@
 
 | # | 测什么 | 怎么做 | 通过标准 / 注意 |
 |---|---|---|---|
-| T-21 | **B站字幕直取（现在已是低风险项）** | 拿一个 B站链接，让它取字幕 | ✅ **已通过**。用 `/x/v2/dm/view`（不是 `player/v2`）拿到 cue。现成脚本：`research\bili-probe\bili_subtitle.py <BV> --lang zh`。**判据：`dm/view` 0 轨才算真没字幕** |
+| T-21 | **B站字幕直取（现在已是低风险项）** | 拿一个 B站链接，让它取字幕 | ✅ **已通过**。用 `/x/v2/dm/view`（不是 `player/v2`）拿到 cue。现成工具：`node tools\bili_lecture.mjs <BV>`。**判据：`dm/view` 0 轨才算真没字幕** |
 | T-22 | **B站无字幕时的 ASR 兜底 / 本地转录** | 对 `dm/view` 返回 0 轨的视频走 ASR | ✅ **已通过**（`yt-dlp` 直下 `-f 30280` 音频 → faster-whisper，131s 视频转出 869 字）。⚠️ **但先看 D-1**：插件没 pin `av`，干净 venv 必然失败 |
-| T-22b | `deep-read-summarize` 的 B站路径 | 让它读一个 B站视频 | ⚠️ **它可能仍走 `player/v2` 而拿到空字幕** → 若空，**改用 T-21 的脚本**，并记下这个不一致 |
+| T-22b | `deep-read-summarize` 的 B站路径 | 让它读一个 B站视频 | ⚠️ **它可能仍走 `player/v2` 而拿到空字幕** → 若空，**改用 T-21 的工具**，并记下这个不一致 |
 | T-23 | `dsh-video-lens` | 拿一个**本地**视频文件（它**不接受 URL**） | 出场景帧+证据 JSON。**必须 ≥0.3.2**（0.3.1 会让 DSH 起不来）。实测 npm 上只有 `0.3.1` / `0.3.2` 两个版本，`latest = 0.3.2` |
 | T-24 | 知乎知识库 RAG | 让 agent 上传一个 md 并检索 | ⚠️ **一半通过**：**库已经存在**（默认库，今天创建），**检索 PASS**（真实召回 docx 片段）；**上传 FAIL** —— `.md` 与最小合法 `.pdf` **都报 `Code=40006 file parsing failed`**。**40006 ≠ 没初始化**，是上传链路本身的问题 |
 | T-25 | 知乎 PDF 解析 | — | ❌ **无实现可测**：`@klarkxy/dsh-zhihu` v0.2.4 **没有 `pdf_parse` 工具**（`tools.js` 只注册 5 个搜索类 + 7 个 open-platform 工具）。不是额度问题，是**能力缺口**；`tools` 池 10 次**一次都没花** |
@@ -81,7 +81,7 @@
 
 > **T-21/T-22 的环境注记（已更新）**：`yt-dlp 2026.08.19` 与 `ffmpeg/ffprobe 9.0.2`
 > **现已装好并实测通过**（winget）。此前「本机都缺」是测试前的状态。
->（`ffmpeg` 另有一份在 OhMyPPT 目录下、不在 PATH，那条是旧的假阴性来源。）
+>（`ffmpeg` 那份装在别处的**不在 PATH**，用 `ffmpeg -version` 报"找不到"属正常，是旧的假阴性来源。）
 
 ---
 
@@ -92,7 +92,7 @@
 | T-31 | **额度耗尽行为** | 人为用超某一池（如 `zhida` 100/天）后，报错应是 `Code=30002` 而不是静默失败 |
 | T-32 | **风控行为** | 遇到 `Code=30003`（风控拒绝）时**不要立即重试**，应如实上报 |
 | T-33 | **提供方冲突陷阱** | 若再装第二个搜索插件，`--dump-config` 后**`searchProvider` 与 `fetchProvider` 必须都设**（只设一个会让 `web_fetch` 彻底失效） |
-| T-34 | **回退演练（⚠️ 有破坏性，先读懂再跑）** | `-Rollback` 会回退到**最近一次备份**，而本机最近的备份是**装研究插件之前**的状态 → **真跑会删掉那 6 个插件，以及 `preset-standard` 的 zhihu-tools 修复**。跑之前先确认 `_tmp\plugin-backups\` 里的时间戳含义；只想撤 zhihu-tools 的话，直接用 `cordis.patch.yml.bak-zhihu-tools-*` 覆盖回去更精准。**已按用户选择只做只读演练、未真跑** |
+| T-34 | **回退演练（⚠️ 有破坏性，先读懂再跑）** | `-Rollback` 会回退到**最近一次备份**——如果最近那次备份是装这批插件**之前**的状态，**真跑会把它们全删掉**。跑之前先看清备份目录的时间戳含义；只想起步撤销某一处配置改动的话，直接用你改之前备份的 `cordis.patch.yml.bak-*` 覆盖回去更精准。**建议第一次只做只读演练、不真跑** |
 | T-35 | **不再触发历史坑** | 确认**没有**装 `dsh-web-search-metaso`（自定义事件类型会让历史会话打不开） |
 
 ---
@@ -115,7 +115,7 @@
 
 ## 6. 需要用户自己动手的（agent 做不了）
 
-> **本节已按 2026-10-16 的实测报告修正**（见 `docs\测试报告-2026-10-16.md`）。
+> **本节已按 2026-10-16 的实测结果修正**。
 
 1. **确认插件装在「GUI 实际在跑的那个 profile」里** —— 本机 GUI 跑的是 **`desktop`**，
    不是 `web`。判定方法：查端口 19387 属主进程的命令行里的 profile 路径。

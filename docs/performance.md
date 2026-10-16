@@ -102,7 +102,7 @@
 
 | # | 做法 | 收益 |
 |---|---|---|
-| **1** | **永远不要 `Get-ChildItem -Recurse` 整个工作区。** 用 `grep`/`glob` 工具，或 `-Path` 限定到 `_secrets`/`docs`/`tools`/`research`/`_knowledge` | 213.7s → < 2s |
+| **1** | **永远不要 `Get-ChildItem -Recurse` 整个工作区。** 用 `grep`/`glob` 工具，或 `-Path` 限定到具体子目录（`docs`/`tools`/`_knowledge` 之类） | 213.7s → < 2s |
 | **2** | **大 JSON 用 Node 解析，不用 `ConvertFrom-Json`** | 120.0s → ~1s |
 | **3** | **批量查询用 Node 并发 `fetch` registry**，别串行 `npm view` | 95s → ~5s |
 | **4** | **`free_search_test` 只测你关心的引擎**，别让它去撞 ddg / searxng | 135.7s → ~5s |
@@ -154,18 +154,17 @@
 
 ## 六、怎么自己复测
 
-```powershell
-# 逐源延迟（21 个源 × N 次）
-$env:RUNS='3'; node _tmp\latency-bench.mjs
+量这三件事就够回答"时间花在哪"。实测用的是一次性脚本（未随仓库发布），
+要在自己机器上复现，按下面各自写一个小脚本即可：
 
-# 轮内拆分 + 工具耗时排名（读最新会话日志）
-$s='<DSH_HOME>\sessions\--C-Users-46685-Downloads-dshPPTworks--'
-$cur = Get-ChildItem $s -Recurse -File -Filter 'session.v4.jsonl.zstd' | Sort-Object LastWriteTime -Descending | Select-Object -First 1
-node --max-old-space-size=4096 _tmp\session-timing4.mjs $cur.FullName
+| 要量什么 | 怎么做 |
+|---|---|
+| **逐源延迟** | 对每个端点**各跑 N 次（3 次起）取中位数** —— 只跑一次会把抖动当结论 |
+| **轮内拆分 + 工具耗时排名** | 读最新的会话日志，按工具名聚合耗时，排出最慢的几个 |
+| **最慢的 shell 命令原文** | 从同一份日志里把耗时的 shell 调用原文捞出来（比看汇总更能定位） |
 
-# 最慢的 shell 命令原文
-node --max-old-space-size=4096 _tmp\slow-pwsh.mjs $cur.FullName
-```
+会话日志在 `<DSH_HOME>\sessions\<工作区目录名>\` 下，文件名 `session.v4.jsonl.zstd`，
+取 `LastWriteTime` 最新的那份。
 
 > ⚠️ 会话日志是**多帧 zstd 拼接**，单次 `zstdDecompressSync` 只能解第一帧；
-> 必须按 magic 切帧逐帧解压（本文脚本已处理）。
+> 必须按 magic 切帧逐帧解压。

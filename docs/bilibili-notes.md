@@ -9,8 +9,7 @@ sources:
   - https://api.bilibili.com/x/player/v2  (本机实调 30 次，全空 —— 这是错误结论的来源)
   - https://api.bilibili.com/x/web-interface/view  (本机实调)
   - https://raw.githubusercontent.com/avldya/bilibili-sub-cli/main/README.md
-  - research/bili-probe/B站内容获取能力判定.md  (他方完整判定 + 两个独立校验员证据包)
-  - research/verify-subtitle/REPORT.md、research/verify-asr/00_VERDICT.md
+  - 他方完整判定 + 两个独立校验员的证据包（当时的工作目录产物，未随仓库发布）
 ---
 
 ## Gap
@@ -76,21 +75,24 @@ playurl（匿名可取 DASH 音频 30216/30232/30280，range GET 返回 206，�
 - **判断「有没有字幕」只能看 `dm/view`**，看 `view` 或 `player/v2` 会得出错误结论。
 - `dm/view` 返回 0 轨 ⇒ 真的没字幕 ⇒ 走 ASR 兜底。
 
-现成脚本（他方产物，在 `research\bili-probe\`）：
+本仓库已经把这个判据做进 `tools/bili_lecture.mjs`：
+
 ```powershell
-$py = '<DSH_HOME>\dsh-runtimes\...'
-& $py '<workspace>\research\bili-probe\bili_subtitle.py' BV1GJ411x7h7 --lang zh
-& '<LOCALAPPDATA>\Programs\Python\Python311\python.exe' `
-  '<workspace>\research\bili-probe\bili_fetch_asr.py' BV1nCWc6KEfS --lang zh --itn
+node tools\bili_lecture.mjs BV1GJ411x7h7
+node tools\bili_lecture.mjs BV1GJ411x7h7 --lang zh --comments 20
 ```
+
+输出在 `./bili-output/`：`<BV>.subtitle.txt`、`.subtitle.srt`、`.comments.md`、
+以及 `.lecture.md`（合并包，直接喂模型用这个）。
+
+字幕为空、需要走 ASR 兜底时：接口匿名取音频 → ffmpeg 抽音轨 → 本地 SenseVoice 转录。
 
 ## What it changes
 
 - **视频学习这条路可用**，而且不依赖 `deep-read-summarize` 的 faster-whisper 路径
   → **也就不需要为转录去下 461MB 的 HuggingFace 权重**（SenseVoice 本机已有）。
 - `deep-read-summarize` 的「B站官方字幕优先」**可能仍是走 `player/v2` 而拿不到东西**
-  → 若实际使用时字幕为空，**改用 `research\bili-probe\bili_subtitle.py`**，
-  它是已验证可用的那条路。
+  → 若实际使用时字幕为空，**改用 `tools\bili_lecture.mjs`**，它是已验证可用的那条路。
 - 边界：付费/番剧/课程/充电专属匿名拿不到（与「未登录能否在网页播放」一致）；
   `auth_key` 有时效，**用前现取现下，不要缓存 URL**。
 

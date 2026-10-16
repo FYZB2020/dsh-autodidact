@@ -435,15 +435,16 @@ Content-Type: application/json
   - 附带：取视频列表用 `popular`（`code:0`）；`ranking/v2` → `-352` 风控。
   - 边界：付费/番剧/课程/充电专属匿名拿不到（与「未登录能否在网页播放」一致）；
     `auth_key` 有时效，**用前现取现下，不要缓存 URL**。
-  - 现成脚本：`research\bili-probe\bili_subtitle.py`（他方产物，已验证）。
+  - 本仓库的 `tools\bili_lecture.mjs` 已经把这套取法实现好了。
 
 - **本地转录：本机已有可离线运行的资产，不必然要下 HuggingFace 权重。**
   - **SenseVoice int8 ONNX（239MB）本机已有**：
     `~\.dsh\speech-to-text\sensevoice\models\sensevoice-onnx\model.int8.onnx`
     —— **无需下载、无外网推理**；实测 126s 中文视频转 612 字，RTF 0.026。
   - **ffmpeg 本机也有**（只是**不在 PATH**，所以命令行直接调会报找不到）：
-    `<LOCALAPPDATA>\Programs\OhMyPPT\resources\app.asar.unpacked\resources\ffmpeg\ffmpeg.exe`
-  - 兜底脚本：`research\bili-probe\bili_fetch_asr.py`（匿名取音频 → ffmpeg → 本地 SenseVoice）。
+    它随某个已装的桌面应用落在 `<LOCALAPPDATA>\Programs\<应用>\...\ffmpeg.exe`，
+    找到绝对路径直接调用即可；也可以自己用 winget 装一份进 PATH。
+  - 兜底路径：接口匿名取音频 → ffmpeg 抽音轨 → 本地 SenseVoice 转录（本仓库未附带脚本，按这三步自己串）。
   - ⚠️ **ASR 必须分段（默认 30 秒窗口）**：one-shot 喂长音频遇到音乐/非语音段会触发
     CTC 重复环 —— 实测 212s 音乐 one-shot 只出 48 字「goodbye goodbye…」，
     切 30s 窗口出 **619 字真歌词**。
@@ -884,8 +885,7 @@ DSH「任一 Loader 条目失败则整棵树失败」→ **整个应用起不来
   `@dingpenghui/dsh-web-search-serper@1.1.1`、`@yugasun/dsh-web-search@0.2.5`（五合一）
 - **Bing Search API 已退役**（2025-08-11，微软官方生命周期公告）；
   替代品 Grounding with Bing Search 为 $14/1000 且非通用搜索 API
-- **第三方实测报告留痕**：`_tmp\API-KNOWLEDGE-SOURCES-REPORT.md`、
-  `_knowledge\lessons\keyless-apis-dsh-china.md`、`_tmp\apires\`（原始探测结果）
+- **第三方实测报告**已整理进本仓库 `docs\keyless-apis-china.md`（原始探测结果属临时留痕，未随仓库发布）
 - **本机实测网络**：github.com / api.github.com / raw.githubusercontent.com /
   codeload.github.com / registry.npmjs.org / developer.zhihu.com —— **全部 200**
 - **本机实测「其他 API」可达性**（见 4.6）：
@@ -898,9 +898,8 @@ DSH「任一 Loader 条目失败则整棵树失败」→ **整个应用起不来
 - **本机网络操作坑（见 2.5）**：`curl.exe` / `Invoke-WebRequest` **做不了 HTTPS**
   （`schannel: SEC_E_NO_CREDENTIALS`）→ 一律用 Node/Python；
   `npm view` 需 `--cache <工作区内路径>` 否则 `EPERM`
-- **实测脚本留痕**：`_tmp\net_probe.mjs`、`_tmp\net_probe2.mjs`、`_tmp\zhihu_probe.mjs`、
-  `_tmp\zhihu_capability_probe.mjs`、`_tmp\apiprobe.mjs`、`_tmp\apiprobe2.mjs`、
-  `_tmp\catalog_scan*.txt`、`_tmp\asar_docs\`
+- **实测方式**：上面每一条都是逐个端点实跑得出的（当时用一次性探测脚本，放在临时目录、
+  未随仓库发布）。要复核的话，按 4.6 的端点清单自己再跑一遍即可。
 
 ---
 
@@ -994,8 +993,8 @@ DSH「任一 Loader 条目失败则整棵树失败」→ **整个应用起不来
 - 知乎凭据已写入 `~\.dsh\.env`（`ZHIHU_ACCESS_TOKEN` + `ZHIHU_ACCESS_SECRET` 两个名字都写了）。
 - **`dsh --profile web --dump-config` 返回 exit 0** → 配置树能正常合成，没有「loader entries failed to apply」。
 - `searchProvider: deepseek-official` / `fetchProvider: http` 都在 → **不会**触发 A.3(a) 的冲突。
-- 备份：`_tmp\plugin-backups\20261016-123707\`（本次安装前）。
-- 回退：`tools\install-research-autonomy.ps1 -Rollback`。
+- 备份：安装脚本会在动手前把 `package.json` 与 `cordis.patch.yml` 备份到它自己的工作目录。
+- 回退：`.\install\install.ps1 -Rollback`（回到最近一次备份）。
 
 ### A.2 ⚠️ 新发现的坑：`dsh plugin add` 没有把插件写进 bundle 栈
 
@@ -1088,9 +1087,9 @@ revision they started with; validate changed behavior in a new session.」**
 ```
 
 - 内置的 100 多行 plugins（含 `!!js process.platform === ...` 表达式）**逐字保留**。
-- 备份：`~\.dsh\profiles\web\cordis.patch.yml.bak-zhihu-tools-20261016062624`
+- 备份：改之前先把 `cordis.patch.yml` 复制成 `cordis.patch.yml.bak-<时间戳>`。
 - 验证：`--dump-config` → **exit 0**，且 `zhihu-tools` 出现在合成树里。
-- 回退：把上面那个 `.bak-*` 覆盖回 `cordis.patch.yml` 即可。
+- 回退：把那个 `.bak-*` 覆盖回 `cordis.patch.yml` 即可。
 
 ### A.7 端到端能力自测（本机实跑，全部通过）
 

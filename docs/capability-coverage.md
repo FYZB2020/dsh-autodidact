@@ -47,8 +47,8 @@
 | **微信公众号（正文）** | `get_weixin_article_content` | ✅ 拿到整篇干净正文（实测 3.4 MB 页面 → 无 HTML 噪声） |
 | 中文网页 | `domain_search` → `sogou` / `so360` | ✅ sogou 实测 5 条真结果（CSDN / 博客园 / 36氪） |
 | 中文 AI 资讯 | `domain_search` → `aihot` | ✅ 实测 3 条带日期的 AI 新闻 |
-| **B站字幕** | `research/bili-probe/bili_subtitle.py` | ✅ 走 `x/v2/dm/view` 匿名取字幕（实测 47 / 53 cue） |
-| B站无字幕时 → 本地转录 | `research/bili-probe/bili_fetch_asr.py` | ✅ 匿名取音频 + 本机 SenseVoice ONNX（239 MB，**已在本机**） |
+| **B站字幕** | `tools/bili_lecture.mjs` | ✅ 走 `x/v2/dm/view` 匿名取字幕（实测 47 / 53 cue） |
+| B站无字幕时 → 本地转录 | 本地语音转录（SenseVoice ONNX，239 MB） | ✅ 匿名取音频 + 本机转录 |
 | **知乎（官方开放平台）** | `zhihu_search` / `zhihu_global_search` / `zhihu_hot_list` / `zhihu_knowledge_search` | ⏳ 工具**待新会话**；**直连官方 API 已实测通过**（全网搜索 5000/天、站内 5000/天、直答 100/天） |
 | 小红书 | — | ⛔ **明确不做**（封号风险） |
 
@@ -170,7 +170,7 @@
 #    weixin_search "AI Agent 记忆"  → get_weixin_article_content <永久 /s/ 链接>
 
 # 3) B站字幕（判据：dm/view 有轨才算有字幕）
-node research\bili-probe\verdict_probe.py BV1GJ411x7h7 BV1nCWc6KEfS BV1aWHC6wE6G
+node tools\bili_lecture.mjs BV1GJ411x7h7      # 有字幕就说明 dm/view 有轨
 
 # 4) 知乎额度与真实可用量
 node -e "..."   # GET https://developer.zhihu.com/api/v1/quota（带 Authorization + X-Request-Timestamp）

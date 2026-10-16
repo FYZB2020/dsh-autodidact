@@ -2,10 +2,10 @@
 topic: 研究插件栈的 4 个真实缺陷（非配置问题，值得提 issue）
 date: 2026-10-16
 confidence: high
-task: 执行 docs\测试任务清单.md 时暴露
+task: 执行 docs\verification-checklist.md 时暴露
 sources:
-  - docs/测试报告-2026-10-16.md  (他方逐条实测报告)
-  - _tmp/t21/transcribe.log  (D-1 完整 traceback)
+  - docs/verification-checklist.md  (逐条实测清单)
+  - 完整 traceback（当时留在临时目录，未随仓库发布）
   - 本机 venv 复核：av-18.1.0 已 pin
   - 会话内真工具调用（D-2 / D-3）
   - @klarkxy/dsh-zhihu lib/tools.js:740（D-4）
