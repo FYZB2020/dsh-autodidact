@@ -108,7 +108,68 @@ node install/push-to-github.mjs --owner <你的用户名> --repo <仓库名> `
 ### 路 C：零凭据（不推荐但可行）
 
 让 AI 把 `dsh-autodidact` 打成 zip，你在 GitHub 网页上 **Add file → Upload files** 拖进去。
-缺点：网页上传不能建目录结构（会平铺），且超过 100 个文件会很痛苦。**本 kit 只有 19 个文件**，勉强可行。
+缺点：网页上传不能建目录结构（会平铺），且超过 100 个文件会很痛苦。**本 kit 只有 21 个文件**，勉强可行。
+
+---
+
+### 路 D：本机有代理时，走代理 + GCM（**零 token，最省事**）
+
+如果机器上跑着代理（Clash / V2Ray 之类），**根本不需要建 token** —— 让 git 走代理，
+登录交给 Git Credential Manager 就行：
+
+```powershell
+# 1) 让这个仓库走本机代理（Clash Verge 默认监听 127.0.0.1:7897，按自己实际端口改）
+git -C <kit 目录> config http.proxy  http://127.0.0.1:7897
+git -C <kit 目录> config https.proxy http://127.0.0.1:7897
+
+# 2) 正常推
+git -C <kit 目录> remote add origin https://github.com/<owner>/<repo>.git
+git -C <kit 目录> push -u origin main
+```
+
+第一次推会弹出 **Git Credential Manager** 的登录窗口（Git for Windows 自带，系统级
+`credential.helper=manager`），在浏览器里授权一次即可。之后 **不用再登、也不留任何 token 文件**，
+而且拿到的是**标准 git 历史**（不是脚本造的 commit）。
+
+> ⚠️ 如果浏览器打不开 github.com，先把代理的「**系统代理**」开关打开 ——
+> 登录窗口和浏览器都靠它。git 走的是上面那两行配置，和系统代理是两回事。
+
+**四路取舍（2026-10-16 实测于本机）：**
+
+| 路 | 需要 token | 拿到什么 | 什么时候用 |
+|---|---|---|---|
+| A（API 脚本） | 要（fine-grained） | 脚本造的 commit | **完全连不上** `github.com` 时 |
+| B（自己跑 API 脚本） | 要 | 同上 | 同上 |
+| C（网页拖文件夹） | 不要 | 网页造的 commit | 文件少、且不在意平铺 |
+| **D（代理 + GCM）** | **不要** | **标准 git 历史** | **本机有代理时首选** |
+
+本机实测：`github.com` **直连不通**（`Failed to connect ... port 443` 超时）；
+**经代理通**（`git ls-remote` 正常返回）；`api.github.com` **直连就通**（HTTP 200）——
+所以 A/B 那条路在这里也成立，两条都能用。
+
+---
+
+### 忘了"不要勾 Add a README"，推上去被拒了怎么办
+
+```
+! [rejected]        main -> main (fetch first)
+```
+
+说明远端**已经有东西**了 —— 最常见就是建仓库时 GitHub 自动塞的那个占位 README（`# <repo>`，几十字节）。
+
+**不要**直接 `push --force`（会把那段历史抹掉）。合并即可：
+
+```powershell
+git fetch origin
+git merge origin/main --allow-unrelated-histories --no-commit
+# README.md 会出现 add/add 冲突：取自己这份
+git checkout HEAD -- README.md
+git add -A
+git commit -m "chore: initial import（替换掉 GitHub 自动生成的占位 README）"
+git push origin main
+```
+
+这样占位提交留在历史里、文件内容是你自己的，谁都不丢东西。
 
 ---
 

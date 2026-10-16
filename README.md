@@ -326,26 +326,6 @@ node tools/bili_lecture.mjs BV1nCWc6KEfS --chunk 300      # 长视频分块
 
 ---
 
-## 发布到 GitHub
-
-**要发布先看 [docs/PUBLISH.md](docs/PUBLISH.md)** —— 写了建仓库时每个字段怎么填、token 用最小权限怎么建、
-以及三条推送路径。
-
-⚠️ 一个实测坑：**本机 `github.com` 域名不可达/不稳定**（`git push` 会失败），
-但 **`api.github.com` 稳定**。所以仓库里带了 `install/push-to-github.mjs`，
-走 REST API（blob → tree → commit → ref）推送，不依赖 `git push`。正常网络下也可以直接用 git。
-
-## 发布前自检
-
-```bash
-node install/self-test.mjs        # 语法 / SKILL frontmatter / 死链 / .gitignore / 密钥与绝对路径
-node install/scan-secrets.mjs     # 单独跑密钥与绝对路径闸门（退出码 0 = 可以发布）
-```
-
-建议挂成 `.git/hooks/pre-commit`，或加一条 CI（见 PUBLISH.md §5）。
-
----
-
 ## 环境与实测声明
 
 本文所有「实测」结论取自 **2026-10-16 · Windows 11 · DSH 0.2.0-rc.2 · 无代理 · 中国大陆出口**。
